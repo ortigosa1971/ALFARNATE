@@ -18,24 +18,34 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta raíz protegida
 app.get('/', (req, res) => {
   if (!req.session.user) return res.redirect('/login.html');
   res.sendFile(path.join(__dirname, 'views', 'inicio.html'));
 });
 
-// Protección directa a inicio.html
 app.get('/inicio.html', (req, res) => {
   if (!req.session.user) return res.redirect('/login.html');
   res.sendFile(path.join(__dirname, 'views', 'inicio.html'));
 });
 
-// Verificación de sesión activa
 app.get('/verificar-sesion', (req, res) => {
-  if (!req.session.user) return res.sendStatus(401);
+  if (!req.session.user) {
+    console.log("🔒 [verificar-sesion] No hay sesión activa");
+    return res.sendStatus(401);
+  }
 
   db.get('SELECT session_id FROM users WHERE username = ?', [req.session.user.username], (err, row) => {
-    if (err || !row || row.session_id !== req.sessionID) {
+    if (err || !row) {
+      console.log("⚠️ [verificar-sesion] Error o usuario no encontrado:", err);
+      return req.session.destroy(() => res.sendStatus(401));
+    }
+
+    console.log(`🔍 [verificar-sesion] Usuario: ${req.session.user.username}`);
+    console.log(`🆔 Actual: ${req.sessionID}`);
+    console.log(`🆔 En DB : ${row.session_id}`);
+
+    if (row.session_id !== req.sessionID) {
+      console.log("⛔ Sesión no coincide. Cerrando.");
       req.session.destroy(() => res.sendStatus(401));
     } else {
       res.sendStatus(200);
@@ -43,16 +53,18 @@ app.get('/verificar-sesion', (req, res) => {
   });
 });
 
-// Login solo con nombre de usuario, y cierre de sesión anterior
 app.post('/login', (req, res) => {
   const { usuario } = req.body;
 
   db.get('SELECT * FROM users WHERE username = ?', [usuario], (err, row) => {
     if (err || !row) {
+      console.log("❌ [login] Usuario no encontrado:", usuario);
       return res.redirect('/login.html?error=1');
     }
 
-    // Cerrar sesión anterior antes de asignar la nueva
+    console.log("🔓 [login] Usuario autenticado:", usuario);
+
+    // Cerrar cualquier sesión anterior
     db.run('UPDATE users SET session_id = NULL WHERE username = ?', [usuario], (err) => {
       if (err) {
         console.error("❌ Error limpiando session_id previo:", err.message);
@@ -67,6 +79,7 @@ app.post('/login', (req, res) => {
           return res.redirect('/login.html?error=1');
         }
 
+        console.log(`✅ [login] session_id actualizado: ${req.sessionID}`);
         res.redirect('/inicio.html');
       });
     });
@@ -74,4 +87,4 @@ app.post('/login', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor escuchando en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Servidor escuchando en puerto ${PORT}`));
