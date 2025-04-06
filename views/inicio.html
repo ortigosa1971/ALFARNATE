@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -74,7 +75,7 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-  </style>
+</style>
 </head>
 <body>
   <h1 class="text-4xl font-bold text-white mb-4">ALFARNATE</h1>
@@ -108,36 +109,36 @@
     <canvas id="grafico-lluvia" width="400" height="200" class="mt-4"></canvas>
   </div>
 
+  <!-- Overlay por sesión cerrada -->
+  <div id="overlay-sesion" class="hidden fixed inset-0 bg-white flex items-center justify-center z-50">
+    <p class="text-red-600 text-4xl font-extrabold text-center px-6">
+      ⚠️ Tu sesión ha sido cerrada<br>porque iniciaste sesión en otro dispositivo.
+    </p>
+  </div>
+
   <script>
     async function fetchWeatherData() {
       const apiKey = 'b766892fc8e04176a6892fc8e0217600';
       const stationId = 'IHURCA32';
       const url = `https://api.weather.com/v2/pws/observations/current?stationId=${stationId}&format=json&units=m&apiKey=${apiKey}`;
-
       try {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
         const data = await response.json();
-
         const obs = data.observations?.[0];
         if (!obs) throw new Error("Datos no disponibles.");
-
         const metric = obs.metric || {};
-        const temp = metric.temp;
-
-        document.getElementById('temperature').textContent = `${temp} °C`;
+        document.getElementById('temperature').textContent = `${metric.temp} °C`;
         document.getElementById('humidity').textContent = `${obs.humidity} %`;
         document.getElementById('wind-speed').textContent = `${metric.windSpeed} km/h`;
         const dir = obs.winddir;
         const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
         const idx = Math.round(dir / 45) % 8;
-        const cardinal = dirs[idx];
-        document.getElementById('wind-dir').textContent = `${dir}° (${cardinal})`;
+        document.getElementById('wind-dir').textContent = `${dir}° (${dirs[idx]})`;
         document.getElementById('rainfall').textContent = `${metric.precipTotal} mm`;
         document.getElementById('pressure').textContent = `${metric.pressure} hPa`;
         document.getElementById('uv-index').textContent = obs.uv;
         document.getElementById('time').textContent = new Date(obs.obsTimeLocal).toLocaleString();
-
         document.getElementById('error-message').classList.add('hidden');
       } catch (err) {
         console.error("⚠️ Error al obtener los datos:", err);
@@ -151,18 +152,15 @@
       const lat = 36.985;
       const lon = -4.223;
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_min,temperature_2m_max,weathercode,precipitation_probability_max&timezone=auto&forecast_days=7`;
-
       try {
         const res = await fetch(url);
         const data = await res.json();
         const forecastDiv = document.getElementById("forecast");
-
         const dias = data.daily.time;
         const min = data.daily.temperature_2m_min;
         const max = data.daily.temperature_2m_max;
         const code = data.daily.weathercode;
         const lluvia = data.daily.precipitation_probability_max;
-
         const desc = {
           0: 'Despejado ☀️', 1: 'Mayormente despejado 🌤️', 2: 'Parcialmente nublado ⛅',
           3: 'Nublado ☁️', 45: 'Niebla 🌫️', 48: 'Niebla escarchada 🌫️❄️',
@@ -171,7 +169,6 @@
           71: 'Nieve ligera 🌨️', 73: 'Nieve moderada 🌨️', 75: 'Nieve intensa ❄️',
           80: 'Chubascos ligeros 🌦️', 81: 'Chubascos moderados 🌧️', 82: 'Chubascos fuertes ⛈️'
         };
-
         forecastDiv.innerHTML = '';
         for (let i = 0; i < dias.length; i++) {
           const dia = new Date(dias[i]).toLocaleDateString('es-ES', { weekday: 'long' });
@@ -186,29 +183,23 @@
     function mostrarLluviaAcumuladaPorMes() {
       const apiKey = 'b766892fc8e04176a6892fc8e0217600';
       const stationId = 'IHURCA32';
-
       const mesInput = document.getElementById('mes-selector').value;
       const resultado = document.getElementById('resultado-mes');
       const spinner = document.getElementById('spinner-mes');
       const canvas = document.getElementById('grafico-lluvia');
       const ctx = canvas.getContext('2d');
-
       if (!mesInput) {
         resultado.textContent = "⚠️ Selecciona un mes válido.";
         return;
       }
-
       const [year, month] = mesInput.split("-");
       const startDate = `${year}${month}01`;
       const endDateObj = new Date(year, parseInt(month), 0);
       const endDay = String(endDateObj.getDate()).padStart(2, '0');
       const endDate = `${year}${month}${endDay}`;
-
       const url = `https://api.weather.com/v2/pws/history/daily?stationId=${stationId}&format=json&units=m&startDate=${startDate}&endDate=${endDate}&apiKey=${apiKey}`;
-
       spinner.style.display = "block";
       resultado.textContent = "🔄 Consultando...";
-
       fetch(url)
         .then(res => {
           if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
@@ -219,14 +210,10 @@
             const fecha = new Date(day.obsTimeLocal);
             return fecha.getDate();
           });
-
           const lluviaDiaria = data.observations.map(day => day.metric?.precipTotal || 0);
-
           const total = lluviaDiaria.reduce((a, b) => a + b, 0);
           resultado.textContent = `🌧️ Lluvia total en ${month}/${year}: ${total.toFixed(2)} mm`;
-
           if (window.miGrafico) window.miGrafico.destroy();
-
           window.miGrafico = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -261,23 +248,21 @@
       fetchWeatherData();
       fetchForecast();
       setInterval(fetchWeatherData, 60000);
-
       const botonMes = document.getElementById("boton-mes");
       if (botonMes) {
         botonMes.addEventListener("click", mostrarLluviaAcumuladaPorMes);
       }
     });
+
+    // Verificación de sesión activa
+    setInterval(() => {
+      fetch('/verificar-sesion')
+        .then(res => {
+          if (res.status === 401) {
+            document.getElementById('overlay-sesion').classList.remove('hidden');
+          }
+        });
+    }, 1500);
   </script>
-
-
-<script>
-  setInterval(() => {
-    fetch('/verificar-sesion')
-      .then(res => {
-        if (res.status === 401) {
-          alert("⚠️ Tu sesión ha sido cerrada porque iniciaste sesión en otro dispositivo.");
-          window.location.href = "/login.html?motivo=expirada";
-        }
-      });
-  }, 1500);
-</script>
+</body>
+</html>
