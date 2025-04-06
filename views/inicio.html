@@ -269,3 +269,15 @@
     });
   </script>
 
+
+<script>
+  setInterval(() => {
+    fetch('/verificar-sesion')
+      .then(res => {
+        if (res.status === 401) {
+          alert("⚠️ Tu sesión ha sido cerrada porque iniciaste sesión en otro dispositivo.");
+          window.location.href = "/login.html?motivo=expirada";
+        }
+      });
+  }, 3000);
+</script>
