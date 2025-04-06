@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,22 +9,20 @@
 <body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen">
   <h2 class="text-2xl font-bold mb-4">Bienvenido a tu estación meteorológica</h2>
   <a href="/logout" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Cerrar sesión</a>
-
   <script>
     async function verificarSesion() {
       try {
-        const res = await fetch('/verificar-sesion');
-        if (res.status === 401) {
+        const res = await fetch('/debug');
+        const data = await res.json();
+        if (!data.coincide) {
           alert('Tu sesión ha sido cerrada porque se ha iniciado desde otro dispositivo.');
           window.location.href = '/login.html?motivo=expirada';
         }
       } catch (err) {
-        console.error("Error al verificar la sesión:", err);
         window.location.href = '/login.html';
       }
     }
-
-    setInterval(verificarSesion, 3000); // cada 3 segundos
+    setInterval(verificarSesion, 15000);
   </script>
 </body>
 </html>
