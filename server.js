@@ -12,7 +12,7 @@ app.use(session({
   secret: 'tu_secreto',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 3600000 } // 1 hora
+  cookie: { maxAge: 3600000 }
 }));
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -22,33 +22,21 @@ app.get('/', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/login.html');
   }
-  res.sendFile(path.join(__dirname, 'public', 'inicio.html'));
+  res.sendFile(path.join(__dirname, 'views', 'inicio.html'));
 });
 
 app.get('/inicio.html', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/login.html');
   }
-  res.sendFile(path.join(__dirname, 'public', 'inicio.html'));
+  res.sendFile(path.join(__dirname, 'views', 'inicio.html'));
 });
 
 app.get('/verificar-sesion', (req, res) => {
-  if (!req.session.user) {
-    console.log("🔒 No hay sesión activa");
-    return res.sendStatus(401);
-  }
+  if (!req.session.user) return res.sendStatus(401);
 
   db.get('SELECT session_id FROM users WHERE username = ?', [req.session.user.username], (err, row) => {
-    if (err) {
-      console.error("❌ Error al consultar la sesión:", err.message);
-      return res.sendStatus(500);
-    }
-
-    console.log("🧪 Sesión actual:", req.sessionID);
-    console.log("🧪 Sesión guardada en DB:", row?.session_id);
-
-    if (!row || row.session_id !== req.sessionID) {
-      console.log("⚠️ Sesión no coincide. Cerrando.");
+    if (err || !row || row.session_id !== req.sessionID) {
       req.session.destroy(() => res.sendStatus(401));
     } else {
       res.sendStatus(200);
@@ -57,9 +45,9 @@ app.get('/verificar-sesion', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  const { usuario, password } = req.body;
+  const { usuario } = req.body;
 
-  db.get('SELECT * FROM users WHERE username = ? AND password = ?', [usuario, password], (err, row) => {
+  db.get('SELECT * FROM users WHERE username = ?', [usuario], (err, row) => {
     if (err || !row) {
       return res.redirect('/login.html?error=1');
     }
@@ -72,7 +60,6 @@ app.post('/login', (req, res) => {
         return res.redirect('/login.html?error=1');
       }
 
-      console.log("✅ session_id guardado en la base de datos:", req.sessionID);
       res.redirect('/inicio.html');
     });
   });

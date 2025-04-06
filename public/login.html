@@ -13,24 +13,14 @@
       <label>Usuario:</label>
       <input type="text" name="usuario" required class="w-full p-2 text-black rounded" />
     </div>
-    <div>
-      <label>Contraseña:</label>
-      <input type="password" name="password" required class="w-full p-2 text-black rounded" />
-    </div>
     <button type="submit" class="bg-blue-500 hover:bg-blue-600 py-2 px-4 rounded">Entrar</button>
   </form>
   <script>
     const params = new URLSearchParams(window.location.search);
     if (params.get('error') === '1') {
       const msg = document.createElement("p");
-      msg.textContent = "⚠️ Usuario o contraseña incorrectos";
+      msg.textContent = "⚠️ Usuario no encontrado";
       msg.className = "text-red-500 mt-4";
-      document.body.appendChild(msg);
-    }
-    if (params.get('motivo') === 'expirada') {
-      const msg = document.createElement("p");
-      msg.textContent = "⚠️ Tu sesión fue cerrada porque iniciaste sesión en otro dispositivo.";
-      msg.className = "text-yellow-400 mt-4";
       document.body.appendChild(msg);
     }
   </script>
