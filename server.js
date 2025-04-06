@@ -18,7 +18,7 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Redirección si no hay sesión activa
+// Redirige '/' al login si no hay sesión, o carga inicio.html si hay sesión
 app.get('/', (req, res) => {
   if (!req.session.user) {
     return res.redirect('/login.html');
