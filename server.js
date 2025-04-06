@@ -18,20 +18,19 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Ruta raíz protegida
 app.get('/', (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/login.html');
-  }
+  if (!req.session.user) return res.redirect('/login.html');
   res.sendFile(path.join(__dirname, 'views', 'inicio.html'));
 });
 
+// Protección directa a inicio.html
 app.get('/inicio.html', (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/login.html');
-  }
+  if (!req.session.user) return res.redirect('/login.html');
   res.sendFile(path.join(__dirname, 'views', 'inicio.html'));
 });
 
+// Verificación de sesión activa
 app.get('/verificar-sesion', (req, res) => {
   if (!req.session.user) return res.sendStatus(401);
 
@@ -44,6 +43,7 @@ app.get('/verificar-sesion', (req, res) => {
   });
 });
 
+// Login solo con nombre de usuario, y cierre de sesión anterior
 app.post('/login', (req, res) => {
   const { usuario } = req.body;
 
@@ -52,15 +52,23 @@ app.post('/login', (req, res) => {
       return res.redirect('/login.html?error=1');
     }
 
-    req.session.user = { username: row.username };
-
-    db.run('UPDATE users SET session_id = ? WHERE username = ?', [req.sessionID, row.username], (err) => {
+    // Cerrar sesión anterior antes de asignar la nueva
+    db.run('UPDATE users SET session_id = NULL WHERE username = ?', [usuario], (err) => {
       if (err) {
-        console.error("❌ Error actualizando session_id:", err.message);
+        console.error("❌ Error limpiando session_id previo:", err.message);
         return res.redirect('/login.html?error=1');
       }
 
-      res.redirect('/inicio.html');
+      req.session.user = { username: row.username };
+
+      db.run('UPDATE users SET session_id = ? WHERE username = ?', [req.sessionID, row.username], (err) => {
+        if (err) {
+          console.error("❌ Error actualizando session_id nuevo:", err.message);
+          return res.redirect('/login.html?error=1');
+        }
+
+        res.redirect('/inicio.html');
+      });
     });
   });
 });
