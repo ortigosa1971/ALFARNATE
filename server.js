@@ -26,6 +26,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'inicio.html'));
 });
 
+
 app.get('/verificar-sesion', (req, res) => {
   if (!req.session.user) return res.sendStatus(401);
 
