@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,13 +14,28 @@
     </div>
     <button type="submit" class="bg-blue-500 hover:bg-blue-600 py-2 px-4 rounded">Entrar</button>
   </form>
+
+  <!-- Overlay de error de sesión activa -->
+  <div id="mensaje-error" class="hidden fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
+    <p class="text-red-600 text-3xl font-bold text-center px-4">
+      Ya hay una sesión activa en otro dispositivo.<br>Tu sesión anterior ha sido cerrada.
+    </p>
+  </div>
+
   <script>
     const params = new URLSearchParams(window.location.search);
+
+    // Usuario no encontrado
     if (params.get('error') === '1') {
       const msg = document.createElement("p");
       msg.textContent = "⚠️ Usuario no encontrado";
       msg.className = "text-red-500 mt-4";
       document.body.appendChild(msg);
+    }
+
+    // Sesión activa detectada
+    if (params.get('error') === 'sesion') {
+      document.getElementById('mensaje-error').classList.remove('hidden');
     }
   </script>
 </body>
