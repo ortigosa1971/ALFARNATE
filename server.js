@@ -48,8 +48,9 @@ function verificarSesionUnica(req, res, next) {
 }
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.redirect('/login.html');
 });
+
 
 app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
