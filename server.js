@@ -18,8 +18,12 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Redirección si no hay sesión activa
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  if (!req.session.user) {
+    return res.redirect('/login.html');
+  }
+  res.sendFile(path.join(__dirname, 'public', 'inicio.html'));
 });
 
 app.get('/verificar-sesion', (req, res) => {
