@@ -264,5 +264,34 @@
         });
     }, 1500);
   </script>
+
+<div id="datos" style="padding: 1rem; background: #111827; color: #ffffff; border-radius: 1rem; margin-top: 1rem;">
+  <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Datos en tiempo real</h2>
+  <p>🌡️ Temperatura: <span id="temperatura"></span> °C</p>
+  <p>💧 Humedad: <span id="humedad"></span> %</p>
+  <p>💨 Viento: <span id="viento"></span> km/h</p>
+  <p>🧭 Dirección del viento: <span id="direccion"></span></p>
+  <p>🧪 Presión: <span id="presion"></span> hPa</p>
+  <p>🌧️ Lluvia hoy: <span id="lluviaHoy"></span> mm</p>
+  <p>🌧️ Lluvia anual: <span id="lluviaAnual"></span> mm</p>
+  <p>🕒 Fecha y hora: <span id="fechaHora"></span></p>
+</div>
+
+<script>
+fetch('/websitedataT.json')
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('temperatura').textContent = data.temperatura;
+    document.getElementById('humedad').textContent = data.humedad;
+    document.getElementById('viento').textContent = data.vientoActual;
+    document.getElementById('direccion').textContent = data.direccionViento;
+    document.getElementById('presion').textContent = data.presion;
+    document.getElementById('lluviaHoy').textContent = data.lluviaHoy;
+    document.getElementById('lluviaAnual').textContent = data.lluviaAnual;
+    document.getElementById('fechaHora').textContent = data.fechaHora;
+  })
+  .catch(err => console.error('Error cargando JSON:', err));
+</script>
+
 </body>
 </html>
